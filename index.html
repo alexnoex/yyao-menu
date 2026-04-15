@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>窈窈点菜小馆</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg1: #fff7fb;
+      --bg2: #ffffff;
+      --card: rgba(255,255,255,0.82);
+      --line: #f4d8e5;
+      --text: #2b2330;
+      --muted: #7f6a79;
+      --pink: #ec4899;
+      --pink-2: #f472b6;
+      --pink-3: #fce7f3;
+      --accent: #fb7185;
+      --shadow: 0 12px 36px rgba(236,72,153,0.10);
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC",
+        "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, #ffe7f1 0%, transparent 30%),
+        radial-gradient(circle at top right, #ffeef6 0%, transparent 32%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 22px 18px 44px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(253,242,248,0.96));
+      box-shadow: var(--shadow);
+      padding: 26px 22px 22px;
+      margin-bottom: 18px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -30px -30px auto;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(244,114,182,0.16), transparent 65%);
+      pointer-events: none;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .sub {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .recommend {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 20px;
+      background: rgba(252,231,243,0.62);
+      border: 1px solid #f8d6e7;
+    }
+
+    .recommend-title {
+      font-size: 13px;
+      color: #9d174d;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .recommend-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .recommend-tag {
+      background: white;
+      color: #9d174d;
+      border: 1px solid #f4c7de;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(236,72,153,0.08);
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 1.4fr 0.92fr;
+      gap: 18px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 0 0 14px;
+      letter-spacing: -0.02em;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      border: 1px solid #f2cade;
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: white;
+      color: #7a3d5c;
+      font-size: 14px;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, var(--pink), var(--pink-2));
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 8px 18px rgba(236,72,153,0.22);
+    }
+
+    .tab.locked::after {
+      content: " 🔒";
+      font-size: 12px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      min-height: 164px;
+      border: 1px solid #f5d9e6;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,247,251,0.96));
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      box-shadow: 0 8px 20px rgba(236,72,153,0.06);
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(236,72,153,0.12);
+      border-color: #efb8d2;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .qty-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .stepper {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      border: 1px solid #f3d0df;
+      border-radius: 999px;
+      padding: 6px;
+      box-shadow: 0 4px 12px rgba(236,72,153,0.06);
+    }
+
+    .stepper button {
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 999px;
+      background: var(--pink-3);
+      color: #9d174d;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .qty {
+      min-width: 18px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .pick-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, var(--pink), var(--pink-2));
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(236,72,153,0.22);
+    }
+
+    .pick-btn.alt {
+      background: white;
+      color: #9d174d;
+      border: 1px solid #f3c5db;
+      box-shadow: none;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #6f5a67;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid #ead9e1;
+      border-radius: 16px;
+      background: white;
+      padding: 13px 14px;
+      font-size: 14px;
+      color: var(--text);
+      margin-top: 8px;
+      outline: none;
+    }
+
+    input[readonly] {
+      background: #fcfbfc;
+      color: #8a7280;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #ec4899;
+      box-shadow: 0 0 0 4px rgba(236,72,153,0.08);
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .cart {
+      margin: 10px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .empty {
+      border: 1px dashed #efcada;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.72);
+      color: var(--muted);
+      padding: 16px;
+      font-size: 14px;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid #f3d7e3;
+      border-radius: 20px;
+      background: white;
+      padding: 14px;
+    }
+
+    .cart-name {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .cart-meta {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .mini-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mini-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: none;
+      background: var(--pink-3);
+      color: #9d174d;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .tip {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(252,231,243,0.72);
+      color: #8c365b;
+      font-size: 13px;
+      line-height: 1.7;
+      border: 1px solid #f6d4e4;
+    }
+
+    .submit {
+      position: relative;
+      margin-top: 14px;
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 15px 16px;
+      background: linear-gradient(135deg, var(--pink), var(--accent));
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: .01em;
+      cursor: pointer;
+      box-shadow: 0 16px 26px rgba(236,72,153,0.22);
+      transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+    }
+
+    .submit:disabled {
+      cursor: not-allowed;
+      opacity: .7;
+    }
+
+    .feedback {
+      display: none;
+      margin-top: 14px;
+      border-radius: 18px;
+      padding: 14px 15px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .feedback.success {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+
+    .feedback.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    .hearts {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 20;
+    }
+
+    .heart-float {
+      position: absolute;
+      bottom: -20px;
+      font-size: 18px;
+      animation: floatUp 1.6s ease forwards;
+      opacity: .9;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(.8); opacity: 0; }
+      12% { opacity: 1; }
+      100% { transform: translateY(-320px) translateX(var(--drift)) scale(1.18); opacity: 0; }
+    }
+
+    .modal-wrap {
+      position: fixed;
+      inset: 0;
+      background: rgba(50, 18, 32, 0.28);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 40;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal {
+      width: min(420px, 100%);
+      background: white;
+      border-radius: 26px;
+      padding: 22px;
+      border: 1px solid #f0d4e2;
+      box-shadow: 0 22px 44px rgba(76, 15, 44, 0.18);
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .modal-text {
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-actions button {
+      flex: 1;
+      border: none;
+      border-radius: 16px;
+      padding: 13px 14px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .modal-cancel {
+      background: #f7f0f4;
+      color: #87506c;
+    }
+
+    .modal-confirm {
+      background: linear-gradient(135deg, var(--pink), var(--pink-2));
+      color: white;
+    }
+
+    @media (max-width: 960px) {
+      .main { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 680px) {
+      .cards { grid-template-columns: 1fr; }
+      h1 { font-size: 28px; }
+      .hero, .panel { border-radius: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>💗 窈窈点菜小馆</h1>
+      <div class="sub">这里不卖吃的，只卖我对你的偏爱</div>
+      <div class="recommend">
+        <div class="recommend-title">今日推荐</div>
+        <div class="recommend-tags" id="recommendTags"></div>
+      </div>
+    </section>
+
+    <section class="main">
+      <div class="panel">
+        <div class="section-title">今日菜单</div>
+        <div class="tabs" id="tabs"></div>
+        <div class="cards" id="cards"></div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">送给哥哥</div>
+
+        <label>
+          你的名字
+          <input id="customerName" value="窈窈" readonly />
+        </label>
+
+        <div style="font-size:14px;color:#7f6a79;margin-bottom:8px;">已选内容</div>
+        <div class="cart" id="cart"></div>
+
+        <label style="margin-top:14px;">
+          备注
+          <textarea id="note" placeholder="比如：今天想被哄一下，或者睡前想听你的声音。"></textarea>
+        </label>
+
+        <div class="tip">选好以后点下面的按钮，哥哥会悄悄收到你的点单</div>
+
+        <button class="submit" id="submitBtn">送给哥哥</button>
+
+        <div class="feedback success" id="successBox">已经悄悄送到哥哥那里了。♡</div>
+        <div class="feedback error" id="errorBox">这次没有成功送达，再试一次好不好。</div>
+      </div>
+    </section>
+  </div>
+
+  <div class="hearts" id="hearts"></div>
+
+  <div class="modal-wrap" id="modalWrap">
+    <div class="modal">
+      <div class="modal-title">特色区域</div>
+      <div class="modal-text">这里是只有大人才能看的区域哦，<br>确认要继续吗？</div>
+      <div class="modal-actions">
+        <button class="modal-cancel" id="modalCancel">还是算了</button>
+        <button class="modal-confirm" id="modalConfirm">继续</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxgLVikEkxaVkp7uy9KIkVOV9VJwGZ13ogLkNvR2gGC-o_GZ8EqLswg01DMFEU9JEAGLA/exec';
+
+    const MENU = {
+      "陪伴区": ["陪我聊天","陪我看电影","陪我刷抖音","想语音","想视频","报备在干什么","立刻回消息","今天陪我久一点","我睡觉的时候不要走"],
+      "撒娇区": ["要抱抱","要亲亲","想要被摸头","想要牵手","想被哄一下","今天要多喜欢我一点","不许凶我","说“我爱你”","哄我睡觉"],
+      "情绪区": ["有一点点伤心","有一点点生气","我饿了","伤心了","生气了","今天不开心","肚子疼","不理你了","你欺负我"],
+      "小打小闹区": ["你是小猪","锤你！","想吃小巴掌了？","哼！","坏人"],
+      "特色区域": ["想要贴贴","想要舔舔你","想要压住你","想看你摸摸","想听你读奇怪的文章"]
+    };
+
+    const CATEGORY_KEYS = Object.keys(MENU);
+    const RECOMMEND_POOL = [...MENU["陪伴区"], ...MENU["撒娇区"]];
+    let activeCategory = "陪伴区";
+    let specialUnlocked = false;
+    const qtyMap = {};
+
+    const tabsEl = document.getElementById("tabs");
+    const cardsEl = document.getElementById("cards");
+    const cartEl = document.getElementById("cart");
+    const recommendTagsEl = document.getElementById("recommendTags");
+    const submitBtn = document.getElementById("submitBtn");
+    const successBox = document.getElementById("successBox");
+    const errorBox = document.getElementById("errorBox");
+    const heartsEl = document.getElementById("hearts");
+    const modalWrap = document.getElementById("modalWrap");
+    const modalCancel = document.getElementById("modalCancel");
+    const modalConfirm = document.getElementById("modalConfirm");
+
+    function pickRecommendations() {
+      const arr = [...RECOMMEND_POOL];
+      const picked = [];
+      while (arr.length && picked.length < 3) {
+        const idx = Math.floor(Math.random() * arr.length);
+        picked.push(arr.splice(idx, 1)[0]);
+      }
+      recommendTagsEl.innerHTML = picked.map(item => `<div class="recommend-tag">${item}</div>`).join("");
+    }
+
+    function renderTabs() {
+      tabsEl.innerHTML = "";
+      CATEGORY_KEYS.forEach(cat => {
+        const btn = document.createElement("button");
+        btn.className = "tab" + (cat === activeCategory ? " active" : "") + (cat === "特色区域" ? " locked" : "");
+        btn.textContent = cat;
+        btn.onclick = () => handleTabClick(cat);
+        tabsEl.appendChild(btn);
+      });
+    }
+
+    function handleTabClick(cat) {
+      if (cat === "特色区域" && !specialUnlocked) {
+        modalWrap.style.display = "flex";
+        modalConfirm.onclick = () => {
+          specialUnlocked = true;
+          activeCategory = "特色区域";
+          modalWrap.style.display = "none";
+          renderTabs();
+          renderCards();
+        };
+        modalCancel.onclick = () => {
+          modalWrap.style.display = "none";
+        };
+        return;
+      }
+      activeCategory = cat;
+      renderTabs();
+      renderCards();
+    }
+
+    function renderCards() {
+      cardsEl.innerHTML = "";
+      MENU[activeCategory].forEach(name => {
+        const qty = qtyMap[name] || 0;
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div>
+            <div class="card-title">${name}</div>
+          </div>
+          <div class="qty-row">
+            <div class="stepper">
+              <button data-action="minus">−</button>
+              <div class="qty">${qty}</div>
+              <button data-action="plus">＋</button>
+            </div>
+            <button class="pick-btn ${qty > 0 ? '' : 'alt'}">${qty > 0 ? '已点上' : '我要这个 🐾'}</button>
+          </div>
+        `;
+        const minusBtn = card.querySelector('[data-action="minus"]');
+        const plusBtn = card.querySelector('[data-action="plus"]');
+        const pickBtn = card.querySelector('.pick-btn');
+        minusBtn.onclick = () => changeQty(name, -1);
+        plusBtn.onclick = () => changeQty(name, 1);
+        pickBtn.onclick = () => changeQty(name, qty > 0 ? 0 : 1, true);
+        cardsEl.appendChild(card);
+      });
+    }
+
+    function changeQty(name, delta, absolute = false) {
+      const current = qtyMap[name] || 0;
+      let next = absolute ? delta : current + delta;
+      if (next < 0) next = 0;
+      qtyMap[name] = next;
+      if (next === 0) delete qtyMap[name];
+      if (name === "要亲亲" && next > current) burstHearts(7);
+      if (name === "要抱抱" && next > current) burstHearts(5);
+      if (name === "想要贴贴" && next > current) burstHearts(4);
+      renderCards();
+      renderCart();
+    }
+
+    function renderCart() {
+      const entries = Object.entries(qtyMap).filter(([, qty]) => qty > 0);
+      if (!entries.length) {
+        cartEl.innerHTML = `<div class="empty">还没有选内容。</div>`;
+        return;
+      }
+      cartEl.innerHTML = "";
+      entries.forEach(([name, qty]) => {
+        const item = document.createElement("div");
+        item.className = "cart-item";
+        item.innerHTML = `
+          <div>
+            <div class="cart-name">${name}</div>
+            <div class="cart-meta">数量：${qty}</div>
+          </div>
+          <div class="mini-actions">
+            <button class="mini-btn">−</button>
+            <button class="mini-btn">＋</button>
+          </div>
+        `;
+        const [minus, plus] = item.querySelectorAll('.mini-btn');
+        minus.onclick = () => changeQty(name, -1);
+        plus.onclick = () => changeQty(name, 1);
+        cartEl.appendChild(item);
+      });
+    }
+
+    function burstHearts(count = 6) {
+      const icons = ["♡","♥","💗","💞","💖"];
+      for (let i = 0; i < count; i++) {
+        const span = document.createElement("span");
+        span.className = "heart-float";
+        span.textContent = icons[Math.floor(Math.random() * icons.length)];
+        span.style.left = (18 + Math.random() * 64) + "%";
+        span.style.setProperty("--drift", ((Math.random() - 0.5) * 80).toFixed(0) + "px");
+        span.style.animationDelay = (Math.random() * 0.18).toFixed(2) + "s";
+        heartsEl.appendChild(span);
+        setTimeout(() => span.remove(), 1800);
+      }
+    }
+
+    async function submitOrder() {
+      successBox.style.display = "none";
+      errorBox.style.display = "none";
+      const entries = Object.entries(qtyMap).filter(([, qty]) => qty > 0);
+      if (!entries.length) {
+        errorBox.textContent = "先点一样东西，再送给哥哥。";
+        errorBox.style.display = "block";
+        return;
+      }
+      const name = document.getElementById("customerName").value || "窈窈";
+      const note = document.getElementById("note").value || "无";
+      const items = entries.map(([item, qty]) => `${item} × ${qty}`).join("、");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "正在悄悄送出…";
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ name, items, note })
+        });
+        const text = await response.text();
+        let result = {};
+        try { result = JSON.parse(text); } catch (e) { result = { status: "unknown" }; }
+        if (response.ok && (result.status === "success" || result.status === "unknown")) {
+          Object.keys(qtyMap).forEach(key => delete qtyMap[key]);
+          document.getElementById("note").value = "";
+          renderCards();
+          renderCart();
+          successBox.style.display = "block";
+          burstHearts(12);
+        } else {
+          throw new Error(result.message || "提交失败");
+        }
+      } catch (e) {
+        errorBox.textContent = "这次没有成功送达，再试一次好不好。";
+        errorBox.style.display = "block";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "送给哥哥";
+      }
+    }
+
+    submitBtn.onclick = submitOrder;
+    pickRecommendations();
+    renderTabs();
+    renderCards();
+    renderCart();
+  </script>
+</body>
+</html>
