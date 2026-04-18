@@ -480,6 +480,12 @@
       .hero, .panel { border-radius: 22px; }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script>
+    (function(){
+      emailjs.init("uvJyZUNhQtVtu51j5");
+    })();
+  </script>
 </head>
 <body>
   <div class="wrap">
@@ -539,7 +545,6 @@
   </div>
 
   <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxgLVikEkxaVkp7uy9KIkVOV9VJwGZ13ogLkNvR2gGC-o_GZ8EqLswg01DMFEU9JEAGLA/exec';
 
     const MENU = {
       "陪伴区": ["陪我聊天","陪我看电影","陪我刷抖音","想语音","想视频","报备在干什么","立刻回消息","今天陪我久一点","我睡觉的时候不要走"],
@@ -694,37 +699,40 @@
     async function submitOrder() {
       successBox.style.display = "none";
       errorBox.style.display = "none";
+
       const entries = Object.entries(qtyMap).filter(([, qty]) => qty > 0);
+
       if (!entries.length) {
         errorBox.textContent = "先点一样东西，再送给哥哥。";
         errorBox.style.display = "block";
         return;
       }
+
       const name = document.getElementById("customerName").value || "窈窈";
       const note = document.getElementById("note").value || "无";
       const items = entries.map(([item, qty]) => `${item} × ${qty}`).join("、");
+
       submitBtn.disabled = true;
       submitBtn.textContent = "正在悄悄送出…";
+
       try {
-        const response = await fetch(WEB_APP_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ name, items, note })
-        });
-        const text = await response.text();
-        let result = {};
-        try { result = JSON.parse(text); } catch (e) { result = { status: "unknown" }; }
-        if (response.ok && (result.status === "success" || result.status === "unknown")) {
-          Object.keys(qtyMap).forEach(key => delete qtyMap[key]);
-          document.getElementById("note").value = "";
-          renderCards();
-          renderCart();
-          successBox.style.display = "block";
-          burstHearts(12);
-        } else {
-          throw new Error(result.message || "提交失败");
-        }
-      } catch (e) {
+        await emailjs.send(
+          "service_9i1yugu",
+          "template_9i1yugu",
+          {
+            name: name,
+            items: items,
+            note: note
+          }
+        );
+
+        Object.keys(qtyMap).forEach(key => delete qtyMap[key]);
+        document.getElementById("note").value = "";
+        renderCards();
+        renderCart();
+        successBox.style.display = "block";
+        burstHearts(12);
+      } catch (error) {
         errorBox.textContent = "这次没有成功送达，再试一次好不好。";
         errorBox.style.display = "block";
       } finally {
